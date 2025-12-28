@@ -49,3 +49,28 @@ exports.postSignup = async (req, res, next) => {
     next(err); // Pass to error handler middleware
   }
 };
+
+// show login form
+exports.getLogin = (req, res) => {
+  res.render("login", {
+    error: req.flash("error"),
+    formData: {},
+  });
+};
+
+// handle login
+exports.postLogin = passport.authenticate("local", {
+  successRedirect: "/",
+  failureRedirect: "/login",
+  failureFlash: true, // Enable flash messages for errors
+});
+
+// Handle logout
+exports.logout = (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+};

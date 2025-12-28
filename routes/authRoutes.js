@@ -53,4 +53,18 @@ router.post(
   authController.postSignup
 );
 
+// login routes
+router.get("/login", authController.getLogin);
+router.post(
+  "/login",
+  [
+    body("email").trim().notEmpty().withMessage("Email is required").isEmail(),
+    body("password").notEmpty().withMessage("Password is required"),
+  ],
+  authController.postLogin
+);
+
+// logout route
+router.post("/logout", authController.logout);
+
 module.exports = router;

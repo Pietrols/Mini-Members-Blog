@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Members Only - Home</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      nav {
+        background-color: #333;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
+      nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 15px;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+      .user-info {
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      button {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <% if (currentUser) { %>
+      <a href="/new-message">New Message</a>
+      <% if (!currentUser.is_member) { %>
+      <a href="/join-club">Join Club</a>
+      <% } %> <% } else { %>
+      <a href="/login">Login</a>
+      <a href="/signup">Sign Up</a>
+      <% } %>
+    </nav>
+
+    <h1>Welcome to Members Only</h1>
+
+    <% if (currentUser) { %>
+    <div class="user-info">
+      <p>
+        Hello,
+        <strong
+          ><%= currentUser.first_name %> <%= currentUser.last_name %></strong
+        >!
+      </p>
+      <p>Email: <%= currentUser.email %></p>
+      <p>
+        Member Status: <%= currentUser.is_member ? 'Member' : 'Not a member' %>
+      </p>
+      <% if (currentUser.is_admin) { %>
+      <p>Role: <strong>Admin</strong></p>
+      <% } %>
+      <form method="POST" action="/logout" style="display: inline">
+        <button type="submit">Logout</button>
+      </form>
+    </div>
+    <% } else { %>
+    <p>A private club where members can post anonymous messages.</p>
+    <p><a href="/signup">Join us today!</a></p>
+    <% } %>
+
+    <h2>Recent Messages</h2>
+    <p>Messages will appear here...</p>
+  </body>
+</html>
