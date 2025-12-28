@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
-const { createUser, findUserByEmail } = require("../db/queries.js");
-const passport = require("../config/passport.js");
+const { createUser, findUserByEmail } = require("../db/queries");
+const passport = require("passport"); // ← Use core passport, not our config
 
 // Show signup form
 exports.getSignup = (req, res) => {
@@ -12,18 +12,16 @@ exports.getSignup = (req, res) => {
 exports.postSignup = async (req, res, next) => {
   const errors = validationResult(req);
 
-  // If validation fails, re-render form with errors
   if (!errors.isEmpty()) {
     return res.render("signup", {
       errors: errors.array(),
-      formData: req.body, // Keep user's input
+      formData: req.body,
     });
   }
 
   const { firstName, lastName, email, password } = req.body;
 
   try {
-    // Check if user already exists
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.render("signup", {
@@ -32,10 +30,7 @@ exports.postSignup = async (req, res, next) => {
       });
     }
 
-    // Hash password (10 salt rounds is secure and performant)
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user in database
     const newUser = await createUser(
       firstName,
       lastName,
@@ -43,14 +38,13 @@ exports.postSignup = async (req, res, next) => {
       hashedPassword
     );
 
-    // Redirect to login page after successful signup
     res.redirect("/login");
   } catch (err) {
-    next(err); // Pass to error handler middleware
+    next(err);
   }
 };
 
-// show login form
+// Show login form
 exports.getLogin = (req, res) => {
   res.render("login", {
     error: req.flash("error"),
@@ -58,11 +52,11 @@ exports.getLogin = (req, res) => {
   });
 };
 
-// handle login
+// Handle login (Passport does the heavy lifting)
 exports.postLogin = passport.authenticate("local", {
   successRedirect: "/",
   failureRedirect: "/login",
-  failureFlash: true, // Enable flash messages for errors
+  failureFlash: true,
 });
 
 // Handle logout

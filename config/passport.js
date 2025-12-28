@@ -3,42 +3,41 @@ const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
 const { findUserByEmail, findUserById } = require("../db/queries");
 
-// configure local strategy
+// Configure Local Strategy
 passport.use(
-  {
-    usernameField: "email",
-    passwordField: "password",
-  },
-  async (email, password, done) => {
-    try {
-      const user = await findUserByEmail(email);
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email, password, done) => {
+      try {
+        const user = await findUserByEmail(email);
 
-      // user doesnt exist
-      if (!user) {
-        return done(null, false, { message: "Incorrect email or password" });
+        if (!user) {
+          return done(null, false, { message: "Incorrect email or password" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return done(null, false, { message: "Incorrect email or password" });
+        }
+
+        const { password: _, ...userWithoutPassword } = user;
+        return done(null, userWithoutPassword);
+      } catch (err) {
+        return done(err);
       }
-
-      // compare password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return done(null, false, { message: "Incorrect email or password" });
-      }
-
-      // success - return user without password
-      const { password: _, ...userWithoutPassword } = user;
-      return done(null, userWithoutPassword);
-    } catch (err) {
-      return done(err);
     }
-  }
+  )
 );
 
-// serialize user (store user id in session)
+// Serialize user
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// deserialize user (retrieve user from DB using id from session)
+// Deserialize user
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await findUserById(id);

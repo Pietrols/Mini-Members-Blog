@@ -1,38 +1,38 @@
 require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
-const path = require("path");
-const passport = require("./config/passport.js");
-const authRoutes = require("./routes/authRoutes.js");
 const flash = require("connect-flash");
+const path = require("path");
+const passport = require("./config/passport"); // ← Load config first
+const authRoutes = require("./routes/authRoutes"); // ← Then load routes
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.urlencoded({ extended: false })); // Parse form data
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Session configuration (needed for Passport later)
+// Session configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
 
-// flash messages - after session
+// Flash messages (must come after session)
 app.use(flash());
 
-// passport initialization - after session
+// Passport initialization (must come after session)
 app.use(passport.initialize());
 app.use(passport.session());
 
-// make user available in all views
+// Make user available in all views
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   next();
@@ -45,9 +45,9 @@ app.set("view engine", "ejs");
 // Routes
 app.use("/", authRoutes);
 
-// Home route (placeholder for now)
+// Home route
 app.get("/", (req, res) => {
-  res.send("<h1>Welcome to Members Only</h1><a href='/signup'>Sign Up</a>");
+  res.render("index");
 });
 
 // 404 handler
