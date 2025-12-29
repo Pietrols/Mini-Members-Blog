@@ -4,7 +4,8 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const path = require("path");
 const passport = require("./config/passport"); // ← Load config first
-const authRoutes = require("./routes/authRoutes"); // ← Then load routes
+const authRoutes = require("./routes/authRoutes.js"); // ← Then load routes
+const membershipRoutes = require("./routes/membershipRoutes.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,6 +45,7 @@ app.set("view engine", "ejs");
 
 // Routes
 app.use("/", authRoutes);
+app.use("/", membershipRoutes);
 
 // Home route
 app.get("/", (req, res) => {
