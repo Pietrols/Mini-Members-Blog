@@ -31,11 +31,15 @@ exports.postSignup = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // pass isAdmin flag
+    const adminStatus = isAdmin === "on";
     const newUser = await createUser(
       firstName,
       lastName,
       email,
-      hashedPassword
+      hashedPassword,
+      adminStatus
     );
 
     res.redirect("/login");
