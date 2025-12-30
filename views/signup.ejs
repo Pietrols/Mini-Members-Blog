@@ -24,10 +24,24 @@
         margin-bottom: 5px;
         font-weight: bold;
       }
-      input {
+      input[type="text"],
+      input[type="email"],
+      input[type="password"] {
         width: 100%;
         padding: 8px;
         box-sizing: border-box;
+      }
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .checkbox-group input {
+        width: auto;
+      }
+      .checkbox-group label {
+        font-weight: normal;
+        margin-bottom: 0;
       }
       button {
         background-color: #007bff;
@@ -39,6 +53,11 @@
       }
       button:hover {
         background-color: #0056b3;
+      }
+      small {
+        color: #666;
+        display: block;
+        margin-top: 5px;
       }
     </style>
   </head>
@@ -107,7 +126,7 @@
 
       <div class="form-group checkbox-group">
         <input type="checkbox" id="isAdmin" name="isAdmin" />
-        <label for="isAdmin">Make me an admin </label>
+        <label for="isAdmin">Make me an admin (for testing purposes)</label>
       </div>
 
       <button type="submit">Sign Up</button>

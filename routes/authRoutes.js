@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
+const rateLimit = require("express-rate-limit");
 const authController = require("../controllers/authController");
+
+// Rate limiter for login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many login attempts. Please try again in 15 minutes.",
+});
 
 // Custom validator for password confirmation
 const passwordConfirmValidator = body("confirmPassword").custom(

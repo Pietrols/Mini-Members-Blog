@@ -2,12 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const flash = require("connect-flash");
+const helmet = require("helmet");
 const path = require("path");
 const passport = require("./config/passport"); //  Load config first
 const authRoutes = require("./routes/authRoutes.js"); //  Then load routes
 const membershipRoutes = require("./routes/membershipRoutes.js");
 const messageRoutes = require("./routes/messageRoute.js");
 const { getAllMessages } = require("./db/queries.js");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +17,18 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+
+//security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
+  })
+);
 
 // Session configuration
 app.use(
@@ -24,6 +38,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
+      httpOnly: true, // prevents client-side js from accessing cookies
+      secure: process.env.NODE_ENV === "production", // HTTPS only in production
     },
   })
 );
@@ -39,6 +55,13 @@ app.use(passport.session());
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   next();
+});
+
+// Rate limiter for login attempts
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts
+  message: "Too many login attempts, please try again after 15 minutes",
 });
 
 // View engine
@@ -62,13 +85,19 @@ app.get("/", async (req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).send("<h1>404 - Page Not Found</h1>");
+  res.status(404).render("error", {
+    title: "404 - Page Not Found",
+    message: "The page you're looking for doesn't exist.",
+  });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send("<h1>500 - Something went wrong!</h1>");
+  res.status(500).render("error", {
+    title: "500 - Server Error",
+    message: "Something went wrong on our end. Please try again later.",
+  });
 });
 
 // Start server
