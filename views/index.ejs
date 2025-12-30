@@ -15,6 +15,7 @@
         background-color: #333;
         padding: 10px;
         margin-bottom: 20px;
+        border-radius: 5px;
       }
       nav a {
         color: white;
@@ -26,16 +27,64 @@
       }
       .user-info {
         background-color: #f0f0f0;
-        padding: 10px;
+        padding: 15px;
         margin-bottom: 20px;
         border-radius: 5px;
       }
-      button {
+      .logout-btn {
         background-color: #dc3545;
         color: white;
         padding: 5px 10px;
         border: none;
         cursor: pointer;
+        border-radius: 3px;
+      }
+      .message {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .message-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .message-text {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
+      .message-meta {
+        color: #888;
+        font-size: 0.9em;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .delete-btn {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9em;
+        border-radius: 3px;
+      }
+      .delete-btn:hover {
+        background-color: #c82333;
+      }
+      .no-messages {
+        text-align: center;
+        color: #888;
+        padding: 40px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
       }
     </style>
   </head>
@@ -52,7 +101,7 @@
       <% } %>
     </nav>
 
-    <h1>Welcome to Members Only</h1>
+    <h1>Members Only Club</h1>
 
     <% if (currentUser) { %>
     <div class="user-info">
@@ -64,21 +113,62 @@
       </p>
       <p>Email: <%= currentUser.email %></p>
       <p>
-        Member Status: <%= currentUser.is_member ? 'Member' : 'Not a member' %>
+        Status: <% if (currentUser.is_member) { %> &#x2713; Club Member <% }
+        else { %> &#x2717; Not a member yet <% } %> <% if (currentUser.is_admin)
+        { %> | <strong>Admin</strong>
+        <% } %>
       </p>
-      <% if (currentUser.is_admin) { %>
-      <p>Role: <strong>Admin</strong></p>
-      <% } %>
       <form method="POST" action="/logout" style="display: inline">
-        <button type="submit">Logout</button>
+        <button type="submit" class="logout-btn">Logout</button>
       </form>
     </div>
     <% } else { %>
-    <p>A private club where members can post anonymous messages.</p>
-    <p><a href="/signup">Join us today!</a></p>
+    <p>
+      Welcome to our exclusive club! Members can post anonymous messages and see
+      who wrote what.
+    </p>
+    <p>
+      <strong><a href="/signup">Sign up</a></strong> to join the conversation!
+    </p>
     <% } %>
 
-    <h2>Recent Messages</h2>
-    <p>Messages will appear here...</p>
+    <h2>Club Messages</h2>
+
+    <% if (messages.length === 0) { %>
+    <div class="no-messages">
+      <p>No messages yet. Be the first to post!</p>
+    </div>
+    <% } else { %> <% messages.forEach(message => { %>
+    <div class="message">
+      <div class="message-title"><%= message.title %></div>
+      <div class="message-text"><%= message.text %></div>
+      <div class="message-meta">
+        <div>
+          <% if (currentUser && currentUser.is_member) { %>
+          <strong>Author:</strong> <%= message.first_name %> <%=
+          message.last_name %> | <strong>Posted:</strong> <%= new
+          Date(message.created_at).toLocaleDateString() %> at <%= new
+          Date(message.created_at).toLocaleTimeString() %> <% } else { %>
+          <em>Author hidden (members only)</em>
+          <% } %>
+        </div>
+        <% if (currentUser && currentUser.is_admin) { %>
+        <form
+          method="POST"
+          action="/message/<%= message.id %>/delete"
+          style="display: inline"
+        >
+          <button
+            type="submit"
+            class="delete-btn"
+            onclick="return confirm('Delete this message?')"
+          >
+            Delete
+          </button>
+        </form>
+        <% } %>
+      </div>
+    </div>
+    <% }) %> <% } %>
   </body>
 </html>

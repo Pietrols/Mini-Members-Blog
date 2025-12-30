@@ -3,9 +3,11 @@ const express = require("express");
 const session = require("express-session");
 const flash = require("connect-flash");
 const path = require("path");
-const passport = require("./config/passport"); // ← Load config first
-const authRoutes = require("./routes/authRoutes.js"); // ← Then load routes
+const passport = require("./config/passport"); //  Load config first
+const authRoutes = require("./routes/authRoutes.js"); //  Then load routes
 const membershipRoutes = require("./routes/membershipRoutes.js");
+const messageRoutes = require("./routes/messageRoute.js");
+const { getAllMessages } = require("./db/queries.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,10 +48,16 @@ app.set("view engine", "ejs");
 // Routes
 app.use("/", authRoutes);
 app.use("/", membershipRoutes);
+app.use("/", messageRoutes);
 
 // Home route
-app.get("/", (req, res) => {
-  res.render("index");
+app.get("/", async (req, res, next) => {
+  try {
+    const messages = await getAllMessages();
+    res.render("index", { messages });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // 404 handler
