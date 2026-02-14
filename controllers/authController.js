@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const { createUser, findUserByEmail } = require("../db/queries");
-const passport = require("passport"); // ← Use core passport, not our config
+const passport = require("passport"); 
 
 // Show signup form
 exports.getSignup = (req, res) => {
